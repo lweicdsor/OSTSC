@@ -18,6 +18,6 @@
 #' @export Dataset_ElectricalDevices
 
 Dataset_ElectricalDevices <- function(){
-  eds <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/ElectricalDevices/Dataset_ElectricalDevices.rdata'))))
+  eds <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/ElectricDevices/Dataset_ElectricalDevices.rdata'))))
   return (eds)
 }
