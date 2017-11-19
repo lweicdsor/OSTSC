@@ -242,7 +242,7 @@ Each row in the data represents a sequence of length 96.
 dim(train.sample)
 ```
 
-The imbalance ratio of the training data is 1:4.7.
+The imbalance ratio of the training data is 1:7.
 
 ```{r, }
 table(train.label)
@@ -267,24 +267,44 @@ As a baseline for OSTSC, we assess the performance of LSTM trained on the unbala
 
 ```{r, eval = FALSE}
 library(keras)
-train.y <- to_categorical(train.label)
-test.y <- to_categorical(test.label)
+library(dummies)
+train.y <- dummy(train.label)
+test.y <- dummy(test.label)
 train.x <- array(train.sample, dim = c(dim(train.sample),1)) 
 test.x <- array(test.sample, dim = c(dim(test.sample),1)) 
+vali.y <- dummy(vali.label)
+vali.x <- array(vali.sample, dim = c(dim(vali.sample),1)) 
 ```
 
 2. Initialize a sequential model, add layers and then compile it. Measure the losses and accuracies after each epoch and display them in Figure 1. The score of the losses and accuracies indicate if the model has been well trained.
 ```{r}
- K <- backend()
- metric_f1 <- function(y_true, y_pred) {
-        true_positives <- K$sum(K$round(K$clip(y_true * y_pred, 0, 1)))
-        possible_positives <- K$sum(K$round(K$clip(y_true, 0, 1)))
-        recall <- true_positives / (possible_positives + K$epsilon())
-        
-        predicted_positives <- K$sum(K$round(K$clip(y_pred, 0, 1)))
-        precision <- true_positives / (predicted_positives + K$epsilon())
-        return(2*((precision*recall)/(precision+recall+ K$epsilon())))
- }
+K <- backend()
+metric_f1_0 <- function(y_true, y_pred) { # positive is 0
+  true_positives <- K$sum(y_true*y_pred, axis=K$cast(0,dtype='int32'))[1]
+  possible_positives <- K$sum(y_true,axis=K$cast(0,dtype='int32'))[1]
+  recall <- true_positives / (possible_positives + K$epsilon())
+  
+  predicted_positives<- K$sum(y_pred,axis=K$cast(0,dtype='int32'))[1]
+  precision <- true_positives / (predicted_positives + K$epsilon())
+  return(2*((precision*recall)/(precision+recall+ K$epsilon())))
+}
+
+metric_f1_1 <- function(y_true, y_pred) { # positive is 1
+  true_positives <- K$sum(y_true*y_pred, axis=K$cast(0,dtype='int32'))[2]
+  possible_positives <- K$sum(y_true,axis=K$cast(0,dtype='int32'))[2]
+  recall <- true_positives / (possible_positives + K$epsilon())
+  predicted_positives<- K$sum(y_pred,axis=K$cast(0,dtype='int32'))[2]
+  precision <- true_positives / (predicted_positives + K$epsilon())
+  return(2*((precision*recall)/(precision+recall+ K$epsilon())))
+}
+metric_f1_2 <- function(y_true, y_pred) { # positive is 2
+  true_positives <- K$sum(y_true*y_pred, axis=K$cast(0,dtype='int32'))[3]
+  possible_positives <- K$sum(y_true,axis=K$cast(0,dtype='int32'))[3]
+  recall <- true_positives / (possible_positives + K$epsilon())
+  predicted_positives<- K$sum(y_pred,axis=K$cast(0,dtype='int32'))[3]
+  precision <- true_positives / (predicted_positives + K$epsilon())
+  return(2*((precision*recall)/(precision+recall+ K$epsilon())))
+}
 ```
 ```{r}
 LossHistory <- R6::R6Class("LossHistory",
@@ -293,14 +313,21 @@ LossHistory <- R6::R6Class("LossHistory",
   public = list(
     
     losses = NULL,
-    f1s    = NULL,
-    val_f1s= NULL,
+    f1_0s    = NULL,
+    f1_1s    = NULL,
+    f1_2s    = NULL,
+    val_f1_0s= NULL,
+    val_f1_1s= NULL,
+    val_f1_2s= NULL,
      
     on_epoch_end = function(epoch, logs = list()) {
       self$losses <- c(self$losses, logs[["loss"]])
-      self$f1s    <- c(self$f1s, logs[["f1_score"]])
-      self$val_f1s    <- c(self$val_f1s, logs[["val_f1_score"]])
-      
+      self$f1_0s    <- c(self$f1_0s, logs[["f1_score_0"]])
+      self$f1_1s    <- c(self$f1_1s, logs[["f1_score_1"]])
+      self$f1_2s    <- c(self$f1_2s, logs[["f1_score_2"]])
+      self$val_f1_0s    <- c(self$val_f1_0s, logs[["val_f1_score_0"]])
+      self$val_f1_1s    <- c(self$val_f1_1s, logs[["val_f1_score_1"]])
+      self$val_f1_2s    <- c(self$val_f1_2s, logs[["val_f1_score_2"]])
     }
 ))
 ```
@@ -310,21 +337,21 @@ model <- keras_model_sequential()
 history <- LossHistory$new()
 model %>%
   layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
-  layer_dropout(rate = 0.2) %>% 
+  #layer_dropout(rate = 0.2) %>% 
   layer_dense(dim(train.y)[2]) %>%
-  layer_dropout(rate = 0.2) %>% 
+  #layer_dropout(rate = 0.2) %>% 
   layer_activation("softmax")
 model %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = "adam",
-  metrics = c("accuracy",'f1_score' = metric_f1)
-)
+  optimizer = optimizer_adam(lr = 0.0005),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1)
 lstm.before <- model %>% fit( 
   x = train.x, 
   y = train.y, 
-  validation_split = 0.2,
+  validation_data=list(vali.x,vali.y),
+  batch_size = 300,
   callbacks = list(history),
-  epochs = 10
+  epochs = 100
 )
 ```
 ```{r, echo = FALSE, message=FALSE}
@@ -339,7 +366,7 @@ plot(lstm.before)
 We now train an indentically configured LSTM classifier on the oversampled data. Repeating Steps 1-3; first transform the data:
 
 ```{r, eval = FALSE}
-over.y <- to_categorical(over.label)
+over.y <- dummy(over.label)
 over.x <- array(over.sample, dim = c(dim(over.sample),1)) 
 ```
 
@@ -349,20 +376,22 @@ Then construct and train the model, the loss and accuracy are measured over epoc
 model.over <- keras_model_sequential()
 model.over %>%
   layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
-  layer_dropout(rate = 0.1) %>% 
+  #layer_dropout(rate = 0.1) %>% 
   layer_dense(dim(over.y)[2]) %>%
-  layer_dropout(rate = 0.1) %>% 
+  #layer_dropout(rate = 0.1) %>% 
   layer_activation("softmax")
 model.over %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = "adam", 
-  metrics = "accuracy"
+  optimizer = optimizer_adam(lr = 0.0005),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1)
 )
 lstm.after <- model.over %>% fit( 
   x = over.x, 
   y = over.y, 
-  validation_split = 0.2,
-  epochs = 20
+  validation_data=list(vali.x,vali.y),
+  batch_size = 300,
+  callbacks = list(history),
+  epochs = 100
 )
 ```
 ```{r, echo = FALSE, message=FALSE}
@@ -496,6 +525,8 @@ train.y <- dummy(train.label)
 test.y <- dummy(test.label)
 train.x <- array(train.sample, dim = c(dim(train.sample),1)) 
 test.x <- array(test.sample, dim = c(dim(test.sample),1)) 
+vali.y <- dummy(vali.label)
+vali.x <- array(vali.sample, dim = c(dim(vali.sample),1)) 
 ```
 
 After configuring and training the model, the loss and accuracy are measured at the end of each epoch and shown in Figure 6. The score of the losses and accuracies indicate if the model has been well trained.
@@ -504,20 +535,22 @@ After configuring and training the model, the loss and accuracy are measured at 
 model <- keras_model_sequential()
 model %>%
   layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
-  layer_dropout(rate = 0.2) %>% 
+  #layer_dropout(rate = 0.2) %>% 
   layer_dense(dim(train.y)[2]) %>%
-  layer_dropout(rate = 0.2) %>% 
+  #layer_dropout(rate = 0.2) %>% 
   layer_activation("softmax")
 model %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = "adam", 
-  metrics = "accuracy"
+  optimizer = optimizer_adam(lr = 0.005),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
 )
 lstm.before <- model %>% fit( 
   x = train.x, 
   y = train.y, 
-  validation_split = 0.2,
-  epochs = 20
+  validation_data=list(vali.x,vali.y),
+  batch_size = 200,
+  callbacks = list(history),
+  epochs = 30
 )
 ```
 ```{r, echo = FALSE, message=FALSE}
@@ -542,20 +575,22 @@ Building, training and measuring the loss and accuracy after each epoch is shown
 model.over <- keras_model_sequential()
 model.over %>%
   layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
-  layer_dropout(rate = 0.1) %>% 
+  #layer_dropout(rate = 0.1) %>% 
   layer_dense(dim(over.y)[2]) %>%
-  layer_dropout(rate = 0.1) %>% 
+  #layer_dropout(rate = 0.1) %>% 
   layer_activation("softmax")
 model.over %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = "adam", 
-  metrics = "accuracy"
+  optimizer = optimizer_adam(lr = 0.005),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
 )
 lstm.after <- model.over %>% fit( 
   x = over.x, 
   y = over.y, 
-  validation_split = 0.2,
-  epochs = 20
+  validation_data=list(vali.x,vali.y),
+  batch_size = 200,
+  callbacks = list(history),
+  epochs = 30
 )
 ```
 ```{r, echo = FALSE, message=FALSE}
