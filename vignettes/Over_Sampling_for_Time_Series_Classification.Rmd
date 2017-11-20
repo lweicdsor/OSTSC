@@ -909,7 +909,51 @@ table(over.label)
 ```
 
 Figures 16 and 17 display the loss and accuracy of LSTM without and with oversampling.
+```{r, eval = FALSE}
+model <- keras_model_sequential()
+model %>%
+  layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_dense(dim(train.y)[2]) %>%
+  #layer_dropout(rate = 0.1) %>% 
+  layer_activation("softmax")
+model %>% compile(
+  loss = "categorical_crossentropy", 
+  optimizer = optimizer_adam(lr = 0.07),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+)
+lstm.before <- model %>% fit( 
+  x = train.x, 
+  y = train.y, 
+  validation_data=list(vali.x,vali.y),
+  batch_size = 200,
+  callbacks = list(history),
+  epochs = 200
+)
+```
 
+```{r, eval = FALSE}
+model.over <- keras_model_sequential()
+model.over %>%
+  layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_dense(dim(over.y)[2]) %>%
+  #layer_dropout(rate = 0.1) %>% 
+  layer_activation("softmax")
+model.over %>% compile(
+  loss = "categorical_crossentropy", 
+  optimizer = optimizer_adam(lr = 0.07),
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+)
+lstm.after <- model.over %>% fit( 
+  x = over.x, 
+  y = over.y, 
+  validation_data=list(vali.x,vali.y),
+  batch_size = 200,
+  callbacks = list(history),
+  epochs = 200
+)
+```
 ```{r, echo=FALSE, message=FALSE}
 pred.label <- as.vector(unlist(rfv$HFTp1)) 
 lstm.before <- rfv$HFTh1
