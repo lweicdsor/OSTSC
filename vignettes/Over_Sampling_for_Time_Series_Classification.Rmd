@@ -234,6 +234,8 @@ train.label <- ElectricalDevices$train.y
 train.sample <- ElectricalDevices$train.x
 test.label <- ElectricalDevices$test.y
 test.sample <- ElectricalDevices$test.x
+vali.label <- ElectricalDevices$vali.y
+vali.sample <- ElectricalDevices$vali.x
 ```
 
 Each row in the data represents a sequence of length 96. 
@@ -491,6 +493,8 @@ train.label <- ECG$train.y
 train.sample <- ECG$train.x
 test.label <- ECG$test.y
 test.sample <- ECG$test.x
+vali.label <- ECG$vali.y
+vali.sample <- ECG$vali.x
 ```
 
 Each row in the data represents a sequence of length 140. 
@@ -764,6 +768,9 @@ train.label <- mhealth$train.y
 train.sample <- mhealth$train.x
 test.label <- mhealth$test.y
 test.sample <- mhealth$test.x
+vali.label <- mhealth$vali.y
+vali.sample <- mhealth$vali.x
+
 ```
 
 Each row in the data represents a sequence of length 30. 
@@ -790,7 +797,49 @@ table(over.label)
 ```
 
 We use the same LSTM classifier, except that we now increase the number of epoches to 200. While, by itself, increasing the number of epoches leads to a performance gain, we are concerned more here with the comparative performance without and with oversampling and less with the absolute gain (which is subject to further parameter tuning).  Figures 11 and 12 show the convergence properties without and with oversampling.
+```{r, eval = FALSE}
+model <- keras_model_sequential()
+model %>%
+  layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_dense(dim(train.y)[2]) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_activation("softmax")
+model %>% compile(
+  loss = "categorical_crossentropy", 
+  optimizer = "adam",
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+)
+lstm.before <- model %>% fit( 
+  x = train.x, 
+  y = train.y, 
+  validation_data=list(vali.x,vali.y),
+  callbacks = list(history),
+  epochs = 80
+)
+```
 
+```{r, eval = FALSE}
+model.over <- keras_model_sequential()
+model.over %>%
+  layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_dense(dim(over.y)[2]) %>%
+  layer_dropout(rate = 0.1) %>% 
+  layer_activation("softmax")
+model.over %>% compile(
+  loss = "categorical_crossentropy", 
+  optimizer = "adam",
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+)
+lstm.after <- model.over %>% fit( 
+  x = over.x, 
+  y = over.y, 
+  validation_data=list(vali.x,vali.y),
+  callbacks = list(history),
+  epochs = 80
+)
+```
 ```{r, echo=FALSE, message=FALSE}
 pred.label <- as.vector(unlist(rfv$MHp1)) 
 lstm.before <- rfv$MHh1 
@@ -885,10 +934,12 @@ HFT <- Dataset_HFT()
 
 label <- HFT$y
 sample <- HFT$x
-train.label <- label[1:15000]
-train.sample <- sample[1:15000, ]
-test.label <- label[15001:30000]
-test.sample <- sample[15001:30000, ]
+train.label <- label[1:20000]
+train.sample <- sample[1:20000, ]
+test.label <- label[23001:30000]
+test.sample <- sample[23001:30000, ]
+vali.label <- label[20001:23000]
+vali.sample <- sample[20001:23000, ]
 ```
 
 The imbalance ratio of the training data is 1:48:1.
@@ -913,22 +964,21 @@ Figures 16 and 17 display the loss and accuracy of LSTM without and with oversam
 model <- keras_model_sequential()
 model %>%
   layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
-  layer_dropout(rate = 0.1) %>% 
+  layer_dropout(rate = 0.2) %>% 
   layer_dense(dim(train.y)[2]) %>%
-  #layer_dropout(rate = 0.1) %>% 
+  layer_dropout(rate = 0.2) %>% 
   layer_activation("softmax")
 model %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = optimizer_adam(lr = 0.07),
+  optimizer = "adam",
   metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
 )
 lstm.before <- model %>% fit( 
   x = train.x, 
   y = train.y, 
   validation_data=list(vali.x,vali.y),
-  batch_size = 200,
   callbacks = list(history),
-  epochs = 200
+  epochs = 100
 )
 ```
 
@@ -938,20 +988,19 @@ model.over %>%
   layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
   layer_dropout(rate = 0.1) %>% 
   layer_dense(dim(over.y)[2]) %>%
-  #layer_dropout(rate = 0.1) %>% 
+  layer_dropout(rate = 0.1) %>% 
   layer_activation("softmax")
 model.over %>% compile(
   loss = "categorical_crossentropy", 
-  optimizer = optimizer_adam(lr = 0.07),
+  optimizer = "adam",
   metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
 )
 lstm.after <- model.over %>% fit( 
   x = over.x, 
   y = over.y, 
   validation_data=list(vali.x,vali.y),
-  batch_size = 200,
   callbacks = list(history),
-  epochs = 200
+  epochs = 100
 )
 ```
 ```{r, echo=FALSE, message=FALSE}
