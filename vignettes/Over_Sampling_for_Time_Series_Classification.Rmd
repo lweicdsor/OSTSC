@@ -101,7 +101,7 @@ require(pROC)
 ed <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/ElectricDevices%20LSTM%20model%20saved/ElectricalDevices_Precomputed.rdata'))))
 ecg <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/ECG%20LSTM%20model%20saved/ECG_Precomputed.rdata'))))
 mhealth <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/Mhealth%20LSTM%20model%20saved/MHEALTH_Precomputed.rdata'))))
-hft <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/HFT%20LSTM%20model%20saved/HFT_Precomputed.rdata.rdata'))))
+hft <- local(get(load(url('https://github.com/lweicdsor/GSoC2017/raw/master/HFT%20LSTM%20model%20saved/HFT_Precomputed.rdata'))))
 ```
 ```{r}
 data(Dataset_Synthetic_Control)
