@@ -582,7 +582,8 @@ history <- LossHistory$new()
 model %>% compile(
     loss = "categorical_crossentropy", 
     optimizer = optimizer_adam(lr = 0.001),
-    metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+    metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 
+                'f1_score_2' = metric_f1_2)
 )
 lstm.before <- model %>% fit( 
     x = train.x, 
@@ -604,7 +605,8 @@ history.over <- LossHistory$new()
 model.over %>% compile(
     loss = "categorical_crossentropy", 
     optimizer = optimizer_adam(lr = 0.001), 
-    metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+    metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 
+                'f1_score_2' = metric_f1_2)
 )
 lstm.after <- model.over %>% fit( 
     x = over.x, 
@@ -900,27 +902,27 @@ history.over.losses <- as.vector(unlist(mhealth$history.over.losses))
 ```
 
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The F1 scores (class 1) of the LSTM classifier trained on the unbalanced and balanced MHEALTH dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
-plot(history.over.val_f1_1s, type = "b", pch = 19, col = "red", main = "F1 of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0.0, 1.0), xlim = c(0, 80))
+plot(history.over.val_f1_1s, type = "b", pch = 19, col = "red", main = "F1 of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0.0, 1.0), xlim = c(0, 50))
 lines(history.val_f1_1s, type = "b", pch = 19, col = "blue")
-axis(1, at = c(0,10,20,30,40,50,60,70,80),labels = c(0,10,20,30,40,50,60,70,80), las = 1)
+axis(1, at = c(0,10,20,30,40,50),labels = c(0,10,20,30,40,50), las = 1)
 axis(2, at = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), labels = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), las = 1)
 mtext("F1", side = 2, las = 1, line = 3)
 legend("topleft", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
 ```
 
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The F1 scores (class 0) of the LSTM classifier trained on the unbalanced and balanced MHEALTH dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
-plot(history.over.val_f1_0s, type = "b", pch = 19, col = "red", main = "F1 of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0.0, 1.0), xlim = c(0, 80))
+plot(history.over.val_f1_0s, type = "b", pch = 19, col = "red", main = "F1 of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0.0, 1.0), xlim = c(0, 50))
 lines(history.val_f1_0s, type = "b", pch = 19, col = "blue")
-axis(1, at = c(0,10,20,30,40,50,60,70,80),labels = c(0,10,20,30,40,50,60,70,80), las = 1)
+axis(1, at = c(0,10,20,30,40,50),labels = c(0,10,20,30,40,50), las = 1)
 axis(2, at = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), labels = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), las = 1)
 mtext("F1", side = 2, las = 1, line = 3)
 legend("bottomright", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
 ```
 
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The losses of the LSTM classifier trained on the unbalanced and balanced MHEALTH dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
-plot(history.losses, type = "b", pch = 19, col = "blue", main = "Loss of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0, 1), xlim = c(0, 80))
+plot(history.losses, type = "b", pch = 19, col = "blue", main = "Loss of the LSTM classifier on MHEALTH dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0, 1), xlim = c(0, 50))
 lines(history.over.losses, type = "b", pch = 19, col = "red")
-axis(1, at = c(0,10,20,30,40,50,60,70,80),labels = c(0,10,20,30,40,50,60,70,80), las = 1)
+axis(1, at = c(0,10,20,30,40,50),labels = c(0,10,20,30,40,50), las = 1)
 axis(2, at = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), labels = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), las = 1)
 mtext("Loss", side = 2, las = 1, line = 2)
 legend("topleft", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
@@ -1066,7 +1068,8 @@ history <- LossHistory$new()
 model %>% compile(
   loss = "categorical_crossentropy", 
   optimizer = "adam",
-  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 
+              'f1_score_2' = metric_f1_2)
 )
 lstm.before <- model %>% fit( 
   x = train.x, 
@@ -1087,7 +1090,8 @@ history.over <- LossHistory$new()
 model.over %>% compile(
   loss = "categorical_crossentropy", 
   optimizer = "adam",
-  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 'f1_score_2' = metric_f1_2)
+  metrics = c("accuracy",'f1_score_0' = metric_f1_0, 'f1_score_1' = metric_f1_1, 
+              'f1_score_2' = metric_f1_2)
 )
 lstm.after <- model.over %>% fit( 
     x = over.x, 
