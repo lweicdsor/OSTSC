@@ -832,7 +832,7 @@ over.label <- MyData$label
 table(over.label)
 ```
 
-We increase the number of epoches to 80. We are concerned more here with the comparative performance without and with oversampling and less with the absolute gain (which is subject to further parameter tuning).  Figures 14 and 15 compare the F1 scores of the two models without and with oversampling. Figure 16 compares the losses of the two models. Figures 17 and 18 compare the confusion matrices of the two models without and with oversampling. Figure 19 compares the receiver operating characteristic (ROC) curves of the models. The F1 scores on test dataset of two models are parallel to the F1 scores of training history.
+We are concerned more here with the comparative performance without and with oversampling and less with the absolute gain (which is subject to further parameter tuning).  Keeping the number of epoches fixed, , figures 14 and 15 compare the F1 scores of the two models without and with oversampling, figure 16 compares the losses of the two models, figures 17 and 18 compare the confusion matrices of the two models without and with oversampling, and figure 19 compares the receiver operating characteristic (ROC) curves of the models. The F1 scores on test dataset of two models are parallel to the F1 scores of training history.
 
 ```{r, eval = FALSE}
 train.y <- dummy(train.label)
