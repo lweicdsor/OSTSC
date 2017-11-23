@@ -284,7 +284,8 @@ over.x <- array(over.sample, dim = c(dim(over.sample),1))
 ```
 
 2. Initialize a sequential model, add layers and then compile it. Train the LSTM classifier on both of the imbalanced and the oversampled data.
-```{r}
+
+```{r, eval = FALSE}
 K <- backend()
 
 metric_f1_0 <- function(y_true, y_pred) { # positive is 0
@@ -338,9 +339,7 @@ LossHistory <- R6::R6Class("LossHistory",
       self$val_f1_2s    <- c(self$val_f1_2s, logs[["val_f1_score_2"]])
     }
 ))
-```
 
-```{r, eval = FALSE}
 model <- keras_model_sequential()
 model %>%
     layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
@@ -362,8 +361,7 @@ lstm.before <- model %>% fit(
     callbacks = list(history),
     epochs = 50
 )
-```
-```{r, eval = FALSE}
+
 model.over <- keras_model_sequential()
 model.over %>%
     layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
@@ -386,6 +384,7 @@ lstm.after <- model.over %>% fit(
     epochs = 50
 )
 ```
+
 ```{r, echo = FALSE, message=FALSE}
 pred.label <- as.vector(unlist(ed$pred.label)) 
 history.val_f1_0s <- as.vector(unlist(ed$history.val_f1_0s)) 
@@ -396,7 +395,9 @@ history.over.val_f1_0s <- as.vector(unlist(ed$history.over.val_f1_0s))
 history.over.val_f1_1s <- as.vector(unlist(ed$history.over.val_f1_1s)) 
 history.over.losses <- as.vector(unlist(ed$history.over.losses)) 
 ```
+
 3. From the training history, Figures 1 and 2 compare the F1 scores of the two models without and with oversampling. Figure 3 compares the losses of the two models.
+
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The F1 scores (class 1) of the LSTM classifier trained on the unbalanced and balanced Electrical Devices dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
 plot(history.over.val_f1_1s, type = "b", pch = 19, col = "red", main = "F1 of the LSTM classifier on Electrical Devices dataset", yaxt = "n", xaxt = "n", xlab = "Epoches", ylab = "", ylim = c(0.0, 1.0), xlim = c(0, 50))
 lines(history.val_f1_1s, type = "b", pch = 19, col = "blue")
@@ -430,6 +431,7 @@ In addition to the training history, Figures 4 and 5 compare the confusion matri
 pred.label <- model %>% predict_classes(test.x)
 pred.label.over <- model.over %>% predict_classes(test.x)
 ```
+
 ```{r, echo = FALSE}
 cm.before <- table(test.label, pred.label)
 cm.after <- table(test.label, pred.label.over)
@@ -550,6 +552,7 @@ MyData <- OSTSC(train.sample, train.label, parallel = FALSE)
 over.sample <- MyData$sample
 over.label <- MyData$label
 ```
+
 ```{r}
 table(over.label)
 ```
@@ -567,8 +570,7 @@ vali.y <- dummy(vali.label)
 vali.x <- array(vali.sample, dim = c(dim(vali.sample),1)) 
 over.y <- dummy(over.label)
 over.x <- array(over.sample, dim = c(dim(over.sample),1)) 
-```
-```{r, eval = FALSE}
+
 model <- keras_model_sequential()
 model %>%
     layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
@@ -590,8 +592,7 @@ lstm.before <- model %>% fit(
     callbacks = list(history),
     epochs = 50
 )
-```
-```{r, eval = FALSE}
+
 model.over <- keras_model_sequential()
 model.over %>%
     layer_lstm(10, input_shape = c(dim(over.x)[2], dim(over.x)[3])) %>%
@@ -614,6 +615,7 @@ lstm.after <- model.over %>% fit(
     epochs = 50
 )
 ```
+
 ```{r, echo = FALSE, message=FALSE}
 pred.label <- as.vector(unlist(ecg$pred.label)) 
 history.val_f1_0s <- as.vector(unlist(ecg$history.val_f1_0s)) 
@@ -626,6 +628,7 @@ history.over.val_f1_1s <- as.vector(unlist(ecg$history.over.val_f1_1s))
 history.over.val_f1_2s <- as.vector(unlist(ecg$history.over.val_f1_2s)) 
 history.over.losses <- as.vector(unlist(ecg$history.over.losses)) 
 ```
+
 Keeping the number of epoches fixed, Figures 7, 8 and 9 respectively compare the F1 scores of three different classes of the two models without and with oversampling. Figure 10 compares the losses of the two models.
 From the losses and F1 scores, we note that the model has not yet been adequately trained after 50 epoches. We are trying to demonstrate the utility of OSTSC with only a modest amount of computation. The user can of course choose to increase the number of epoches, but will this require more computation. The user would like also to see the larger datasets section below, where more epoches are used for training LSTM.
 
@@ -671,6 +674,7 @@ In addition to the training history, Figures 11 and 12 compare the confusion mat
 pred.label <- model %>% predict_classes(test.x)
 pred.label.over <- model.over %>% predict_classes(test.x)
 ```
+
 ```{r, echo = FALSE}
 cm.before <- table(test.label, pred.label)
 cm.after <- table(test.label, pred.label.over)
@@ -827,6 +831,7 @@ table(over.label)
 ```
 
 We increase the number of epoches to 80. We are concerned more here with the comparative performance without and with oversampling and less with the absolute gain (which is subject to further parameter tuning).  Figures 14 and 15 compare the F1 scores of the two models without and with oversampling. Figure 16 compares the losses of the two models. Figures 17 and 18 compare the confusion matrices of the two models without and with oversampling. Figure 19 compares the receiver operating characteristic (ROC) curves of the models. The F1 scores on test dataset of two models are parallel to the F1 scores of training history.
+
 ```{r, eval = FALSE}
 train.y <- dummy(train.label)
 test.y <- dummy(test.label)
@@ -882,6 +887,7 @@ lstm.after <- model.over %>% fit(
 pred.label <- model %>% predict_classes(test.x)
 pred.label.over <- model.over %>% predict_classes(test.x)
 ```
+
 ```{r, echo = FALSE, message=FALSE}
 pred.label <- as.vector(unlist(mhealth$pred.label)) 
 history.val_f1_0s <- as.vector(unlist(mhealth$history.val_f1_0s)) 
@@ -1091,6 +1097,7 @@ lstm.after <- model.over %>% fit(
     epochs = 100
 )
 ```
+
 ```{r, echo = FALSE, message=FALSE}
 pred.label <- as.vector(unlist(hft$pred.label)) 
 history.val_f1_2s <- as.vector(unlist(hft$history.val_f1_m1s)) 
@@ -1119,7 +1126,7 @@ lines(history.val_f1_0s, type = "b", pch = 19, col = "blue")
 axis(1, at = c(0,10,20,30,40,50,60,70,80,90,100),labels = c(0,10,20,30,40,50,60,70,80,90,100), las = 1)
 axis(2, at = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), labels = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), las = 1)
 mtext("F1", side = 2, las = 1, line = 3)
-legend("topleft", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
+legend("bottomright", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
 ```
 
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The F1 scores (class -1) of the LSTM classifier trained on the unbalanced and balanced HFT dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
@@ -1128,7 +1135,7 @@ lines(history.val_f1_2s, type = "b", pch = 19, col = "blue")
 axis(1, at = c(0,10,20,30,40,50,60,70,80,90,100),labels = c(0,10,20,30,40,50,60,70,80,90,100), las = 1)
 axis(2, at = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), labels = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1), las = 1)
 mtext("F1", side = 2, las = 1, line = 3)
-legend("bottomright", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
+legend("topleft", legend = c("Balanced dataset", "Unbalanced dataset"), col = c("red","blue"), bty = "n", lwd = 2, cex = 0.7)
 ```
 
 ```{r, fig.width = 6, fig.height = 5, fig.cap = "The losses of the LSTM classifier trained on the unbalanced and balanced HFT dataset. Both metrics are evaluated at the end of each epoch.", echo = FALSE}
