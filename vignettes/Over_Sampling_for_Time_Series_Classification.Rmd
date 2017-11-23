@@ -845,9 +845,9 @@ over.x <- array(over.sample, dim = c(dim(over.sample),1))
 model <- keras_model_sequential()
 model %>%
   layer_lstm(10, input_shape = c(dim(train.x)[2], dim(train.x)[3])) %>%
-  layer_dropout(rate = 0.1) %>% 
+  layer_dropout(rate = 0.2) %>% 
   layer_dense(dim(train.y)[2]) %>%
-  layer_dropout(rate = 0.1) %>% 
+  layer_dropout(rate = 0.2) %>% 
   layer_activation("softmax")
 history <- LossHistory$new()
 model %>% compile(
@@ -860,7 +860,7 @@ lstm.before <- model %>% fit(
   y = train.y, 
   validation_data=list(vali.x,vali.y),
   callbacks = list(history),
-  epochs = 80
+  epochs = 50
 )
 
 model.over <- keras_model_sequential()
@@ -881,7 +881,7 @@ lstm.after <- model.over %>% fit(
   y = over.y, 
   validation_data=list(vali.x,vali.y),
   callbacks = list(history.over),
-  epochs = 80
+  epochs = 50
 )
 
 pred.label <- model %>% predict_classes(test.x)
