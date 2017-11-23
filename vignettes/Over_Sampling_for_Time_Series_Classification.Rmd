@@ -793,14 +793,14 @@ The dataset `Dataset_MHEALTH` benchmarks techniques for human behavioral analysi
 In this experiment, only Subjects 1-5 and Feature 12 (the x coordinate of the magnetometer reading from the left-ankle sensor) are used. The dataset is labeled with a dichotonomous response (@Banos2015). Class 11 (Running) is set as the positive and the remaining states are the negative. The dataset is split into training and testing features and labels.
 
 ```{r}
-mhealth <- Dataset_MHEALTH()
+MHEALTH <- Dataset_MHEALTH()
 
-train.label <- mhealth$train.y
-train.sample <- mhealth$train.x
-test.label <- mhealth$test.y
-test.sample <- mhealth$test.x
-vali.label <- mhealth$vali.y
-vali.sample <- mhealth$vali.x
+train.label <- MHEALTH$train.y
+train.sample <- MHEALTH$train.x
+test.label <- MHEALTH$test.y
+test.sample <- MHEALTH$test.x
+vali.label <- MHEALTH$vali.y
+vali.sample <- MHEALTH$vali.x
 ```
 
 Each row in the data represents a sequence of length 30. 
