@@ -72,7 +72,7 @@
 #' dim(train.label)
 #' # check the imbalance ratio of the data
 #' table(train.label)
-#' # oversample class 3, 4, 5 to the same number of observations as class 1
+#' # oversample minority class to the same number of observations as majority classes
 #' MyData <- OSTSC(train.sample, train.label, parallel = FALSE)
 #' # store the feature data after oversampling
 #' x <- MyData$sample

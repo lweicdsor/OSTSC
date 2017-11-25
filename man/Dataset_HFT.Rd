@@ -26,3 +26,4 @@ to 10. In this package, the class 1 and -1 observations are random selected to y
 Matthew Dixon.(2017) Sequence Classification of the Limit Order Book using Recurrent Neural Networks. 
             arXiv:1707.05642.
 }
+
